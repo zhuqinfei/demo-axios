@@ -1,6 +1,5 @@
 
 fakeData()
-
 let model={
   data:{
     name:'',
@@ -21,19 +20,36 @@ let model={
   }
 }
 
+let view={
+  el:'#app',
+  template:`
+    <div>
+    书名：《__name__》
+    数量：<span id='number'>__number__</span>
+    </div>
+    <div>
+      <button id='addone'>加1</button>
+      <button id='minusone'>减1</button>
+      <button id='reset'>清零</button>
+    </div>
+`,
+  render(data){
+    let html=this.template.replace('__name__',data.name)
+     .replace('__number__',data.number)
+    $(this.el).html(html)
+  }
+}
+
 model.fetch(1).then((response)=>{
      let data=response.data
-     let originalHtml=$('#app').html()
-     let newHtml=originalHtml.replace('__name__',data.name)
-       .replace('__number__',data.number)
-     $('#app').html(newHtml)
+     view.render(model.data)
   })
 
 $('#app').on('click','#addone',function(){
     var oldNumber=$('#number').text() //string
     var newNumber=oldNumber-0+1
-    model.update({number:newNumber}).then(()=>{
-      $('#number').text(newNumber)
+    model.update({number:newNumber}).then(({data})=>{
+       view.render(model.data)
     })   
 })
 $('#app').on('click','#minusone',function(){
@@ -42,14 +58,14 @@ $('#app').on('click','#minusone',function(){
     axios.put('/books/1',{
       number:newNumber
     }).then(()=>{
-      $('#number').text(newNumber)
+       view.render(model.data)
     }) 
 })
 $('#app').on('click','#reset',function(){
   axios.put('/books/1',{
       number:0
     }).then(()=>{
-       $('#number').text(0)
+       view.render(model.data)
     })   
 })
 
