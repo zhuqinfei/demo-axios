@@ -1,5 +1,6 @@
 
 fakeData()
+
 let model={
   data:{
     name:'',
@@ -12,7 +13,8 @@ let model={
       return response
     })
   },
-  update(id,data){
+  update(data){
+    let id = this.data.id
     return  axios.put(`/books/${id}`,data).then((response)=>{
       this.data=response.data
       return response
@@ -22,7 +24,8 @@ let model={
 
 let view={
   el:'#app',
-  template:`
+  template:
+  `
     <div>
     书名：《__name__》
     数量：<span id='number'>__number__</span>
@@ -40,34 +43,48 @@ let view={
   }
 }
 
-model.fetch(1).then((response)=>{
-     let data=response.data
-     view.render(model.data)
-  })
-
-$('#app').on('click','#addone',function(){
+var controller={
+  init(options){
+    let view=options.view
+    let model=options.model
+    this.view=view
+    this.model=model
+    this.view.render(this.model.data)
+    this.bindEvents()
+    this.model.fetch(1)
+      .then(( )=>{this.view.render(this.model.data)})
+  },
+  addone(){
     var oldNumber=$('#number').text() //string
     var newNumber=oldNumber-0+1
-    model.update({number:newNumber}).then(({data})=>{
-       view.render(model.data)
-    })   
-})
-$('#app').on('click','#minusone',function(){
+    this.model.update({number:newNumber})
+      .then(( )=>{view.render(this.model.data)})   
+  },
+  
+  minusone(){
     var oldNumber=$('#number').text() //string
     var newNumber=oldNumber-0-1
-    axios.put('/books/1',{
-      number:newNumber
-    }).then(()=>{
-       view.render(model.data)
-    }) 
-})
-$('#app').on('click','#reset',function(){
-  axios.put('/books/1',{
-      number:0
-    }).then(()=>{
-       view.render(model.data)
-    })   
-})
+    this.model.update({number:newNumber})
+      .then(( )=>{view.render(this.model.data)})   
+  },
+  
+  reset(){
+     this.model.update({number:0})
+      .then(( )=>{view.render(this.model.data)})   
+  },
+  
+  bindEvents(){
+    //this是controller
+    $(this.view.el).on('click','#addone',this.addone.bind(this))
+    $(this.view.el).on('click','#minusone',this.minusone.bind(this))
+    $(this.view.el).on('click','#reset',this.reset.bind(this))
+   }
+}
+
+controller.init({view:view,model:model})
+
+
+
 
 /*下面是函数封装*/
 
@@ -85,6 +102,7 @@ axios.interceptors.response.use(function(response){
    if(url==='/books/1' && method==='get'){
      response.data=book   //data是响应的data
    }else if(url==='/books/1' && method==='put'){
+     data=JSON.parse(data)
      Object.assign(book,data)
      response.data=book
    }
