@@ -20,6 +20,23 @@ Model.prototype.update = function(data) {
   })
 }
 
+//创建构造函数
+function View({el,template}){
+  this.el=el
+  this.template=template
+}
+  //让公有属性挂在原型链上
+View.prototype.render=function(data){
+  let html=this.template
+  for(let key in data){
+     html=html.replace(`__${key}__`,data[key])
+  }
+  $(this.el).html(html)
+}
+
+
+//----------上面是MVC类，下面是对象
+
 let model = new Model({
   data: {
     name: '',
@@ -29,17 +46,6 @@ let model = new Model({
   resource:'book'
 })
 
-function View({el,template}){
-  this.el=el
-  this.tempplate=template
-}
-View.prototype.render=function(data){
-  let html=this.template
-  for(let key in data){
-     html=html.replace(`__${key}__`,data[key])
-  }
-  $(this.el).html(html)
-}
 
 let view=new View({
   el:'#app',
